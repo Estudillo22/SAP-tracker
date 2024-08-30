@@ -33,16 +33,14 @@ def lightIntensity(_path: str, _percent: float):
             
         if _ret == True:
   
-         #Convertimos a escala de grises y obtenemos un histograma...
-         #...para calcular que tanta intensidad de luz hay en el frame
          gray = cv2.cvtColor(frameLI, cv2.COLOR_BGR2GRAY)
-         #calcHist([imagen],[canal(es)], mask, [bins], [rangomin,rangomax+1])
          histogram = cv2.calcHist([gray],[0], None, [256], [0,256])
-         #Sumamos el numero de pixeles oscuros en el rango de [0,35]
+         # Sums the range [0,35] that represents darkness
          darkness = sum(histogram[0:35])
         
          if darkness > (1920*1080)*_percent:
-            print('A partir del frame %i' %fpsLI + ' el video tiene poca iluminacion.')
+            print('From the frame number %i' %fpsLI + ' the video has %'+
+                  str(int(percent*100)) + ' of darkness.')
             captureLI.release()
             cv2.destroyAllWindows()
             break
@@ -90,9 +88,8 @@ def morphologicTransform(imageMT):
         Black-and-white frame with the applied transformations, maintaining the 
         same dimensions as the original.
     """    
-    #Kernel para generar estructuras de forma eliptica/circular
+    #Kernel to generate elliptic/circles shapes
     kernelMT = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
-    #Se aplican transformaciones morfologicas para mejorar la imagen binaria
     img_maskMT = cv2.morphologyEx(imageMT, cv2.MORPH_CLOSE, kernelMT)
     img_dilMT = cv2.dilate(img_maskMT, None, iterations= 1)
     demosMT = cv2.demosaicing(img_dilMT, code= cv2.COLOR_BayerBG2GRAY)
@@ -155,35 +152,32 @@ def movementDetector(path: str, fps: int, area_points):
             img_mask = morphologicTransform(aux_img)
             # cv2.imshow('mask', img_mask); cv2.waitKey(0)
             
-            #Se calcula el area minima de movimiento
             if min_area == 0:
                 min_area = minimumArea(img_mask)
             
-            #Guarda el frame en una lista
+            # Saves the frame in a list
             frames.append(img_mask)
-            #Guarda el numero de frame que se esta guardando en la lista anterior
+            # Saves the frame number in a list
             frames_count.append(fps)
         
-            #Superpone los frames guardados cuando la lista tiene un tamaño de 6
+            # Superposes the frames when the list reaches the size of 5
             if len(frames) == 5:
                 sum_frames = sum(frames)
-                #Encuentra el contorno del frame donde se sumaron los 6 frames
+                # Finds the contour of the 5 superposed frames
                 contour, _ = cv2.findContours(sum_frames, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                #Calcula el area del frame resultante de la suma
+                # Compute the area of the superposed frames
                 contour_area = cv2.contourArea(contour[0])
                 
-                #Si el area dentro del contorno no supera los 1400 pixeles, se detiene el calculo...
-                #...y se avanza con el siguiente ciclo del While
                 if contour_area < min_area:
-                #Borra el primer frame guardado en las listas
+                # Deletes the 1st element from each list
                     del frames[0]
                     del frames_count[0]
                     continue
             
                 else:
-                    cv2.imshow('suma', sum_frames); cv2.waitKey(0)
-                    print('Se detecto movimiento entre estos frames: ')
-                    print(frames_count)
+                    cv2.imshow('Sum', sum_frames); cv2.waitKey(0)
+                    print('Motion detected from frame number: ')
+                    print(frames_count[0])
                     break
             
         else: 
@@ -195,27 +189,20 @@ def movementDetector(path: str, fps: int, area_points):
 
 
 ##################################
-# Parametros para leer la ubicacion del archivo
+# Paths
 path_vid = "F:\\VParticles\\Puerta14\\"
 vid_name = "Video01.mp4"
 full_path = path_vid + vid_name
 ##################################
-#Parametro adicionales
+# Parameters
 percent = 0.97
-
 ##################################
-#DEFINE EL FRAME CON BAJA ILUMINACION
-#Y OBTIENE LA ORIENTACION DEL VIDEO
-##################################
+# Frame with darkness
 fps, orientation = lightIntensity(full_path, percent)
 
 ###############################################
-# DETECCION DE MOVIMIENTO EN UN AREA ESPECIFICA.
-###############################################
-#Parametros
-#Creamos los puntos del area, sera un rectangulo centrado en la imagen.
+# Motion detection in a specific area.
 area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
-# Si el video esta vertical, se invierten las coordenadas de cada punto.
 if orientation == 90:
     inverse = []
 
@@ -225,5 +212,5 @@ if orientation == 90:
     
     area_points = np.array(inverse)
     
-frame_inicial = movementDetector(path_vid + vid_name, fps, area_points)
-print('El frame inicial del video es: '+ str(frame_inicial))
+initial_frame = movementDetector(path_vid + vid_name, fps, area_points)
+print('The initial frame of the video: '+ str(initial_frame))

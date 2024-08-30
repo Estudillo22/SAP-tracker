@@ -102,8 +102,6 @@ def getBoundingbox(first_fps: int, path: str, area_points: np.ndarray,
         _capture = cv2.VideoCapture(path)
         _capture.set(cv2.CAP_PROP_POS_FRAMES, first_fps)
         success, _frame = _capture.read()
-        #Comprueba la orientacion del video para corregir...
-        #... el area de interes dada por area_points.
         if orientation == 90:
             inverse = []
 
@@ -113,16 +111,13 @@ def getBoundingbox(first_fps: int, path: str, area_points: np.ndarray,
         
             area_points = np.array(inverse)
         
-        # Se crea un area especifica para buscar la particula y evitar el mayor ruido posible
+        # Create an area to find the particle, minimizing the noise
         gray = cv2.cvtColor(_frame, cv2.COLOR_BGR2GRAY)
         aux_image = np.zeros(shape=(_frame.shape[:2]), dtype=np.uint8)
         aux_image = cv2.drawContours(aux_image, [area_points], -1, (255), -1)
         image_area = cv2.bitwise_and(gray, gray, mask= aux_image)
-        # Se pasa de la escala de grises a escala binaria para reducir el ruido alrededor...
-        #... de la particula.
+        # Change gray scale to binary scale [0,1]
         bn = cv2.inRange(image_area, np.array([15]), np.array([255]))
-        # Convierte la escala binaria a escala de grises con..
-        #... la conversion de -> pixel = 1 entonces pixel = 255.
         bn[bn>=1] = 255
 
         estimate = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT_ALT, 1, 2000, param1=50, 
@@ -132,23 +127,21 @@ def getBoundingbox(first_fps: int, path: str, area_points: np.ndarray,
         (a,b,r) = estim
         
     except TypeError:
-        print("No se encontro la particula en el frame " + str(first_fps) + 
-              " --> siguiente: ", first_fps + 1)
+        print("Particle not found in frame number " + str(first_fps) + 
+              " --> next: ", first_fps + 1)
         first_fps = first_fps + 1
         
         if _attempts > 10:
-            print("Se ha excedido el numero de intentos.")
-            print("No se encontro la particula. Ultimo frame analizado: ",
+            print("The limit of attempts has been exceeded.")
+            print("Particle not found. Last analyzed frame: ",
                   first_fps)
-            _capture.release()
             
             return None
     
         continue
         
     else:
-        # Se crea una imagen completamente en negro para...
-        #... dibujar el circulo encontrado y estimar mejor la bbox.
+        # Create a black frame to draw the computed circle
         bn[:,:]=0
         circle_bn = cv2.circle(bn, (a,b), r, (255, 255, 255), 2)
 
@@ -226,34 +219,32 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
         List of points (x,y) computed by the tracker.
     """    
     
-    ########## Colocar video en frame inicial #########
+    # Sets the video in the initial frame
     capture = cv2.VideoCapture(path)
     capture.set(cv2.CAP_PROP_POS_FRAMES, initial_fps)
     success, frame = capture.read()
     count = capture.get(cv2.CAP_PROP_FRAME_COUNT)
     fps = initial_fps
     
-    ######### Escoger Metodo de Tracking ##########
-    # En este caso se usa el metodo CSRT, ya que es mas preciso y rapido...
-    #... que otros metodos existentes en la libreria de OpenCV #
+    # Create the tracker variable
     tracker = cv2.TrackerCSRT_create()
 
-    ######### Iniciar tracking con bbox ##########
+    # Begins the tracker with the bounding box
     success_track = tracker.init(frame, bbox)
 
     while fps < count:
-        ######### Calculando punto central de bbox#########
+        # Compute the central point of the bbox
         X = int((bbox[0]+bbox[0]+bbox[2])/2)
         Y = int((bbox[1]+bbox[1]+bbox[3])/2)
         
-        ######## Se guardan las coordenadas dependiendo de la orientacion ############
+        # Saves the coordinates depending on the orientation
         if orientation == 90:
             coords.append([Y,X])
         
         else:
             coords.append([X,Y])
         
-        ######### Frame actual #########
+        # Current frame
         fps = int(capture.get(cv2.CAP_PROP_POS_FRAMES))
         success_frame, frame = capture.read()
 
@@ -261,10 +252,10 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
           if fps == final_frame:
             break
 
-          ####### Actualizando el tracker CSRT #########
+          # Updating the tracker variable
           success_track, bbox = tracker.update(frame)
           
-          ####### Muestra el rastreo en tiempo real ######
+          # Shows the tracking in real time
           if success_track is True:
             if irl == True:
                 liveTracking(fps, frame, coords, bbox)
@@ -272,13 +263,13 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
             continue
         
           if success_track is not True:
-            print('Se detecto un error al rastrear')
+            print('An error was detected while tracking the particle.')
             break
         
         else:
             break
     
-    print('No hay mas frames')
+    print('There are no more frames in the video.')
     capture.release()
     cv2.destroyAllWindows()
     
@@ -301,33 +292,30 @@ def show_tracking(points: np.ndarray):
 ########## Toma de tiempo ##########
 initial_time = time.time()
 
-########## Rutas de acceso y guardado ######### 
-pathvid = 'F:\\VParticles\\Puerta14\\'
-pathdata = 'F:\\RastreoOpenCV\\V3Tracking\\Pruebas\\'
+########## Access and saving paths ######### 
+pathvid = 'K:\\VParticles\\14\\'
+pathdata = 'K:\\Tracking\\'
 namevid = 'Video05H.MP4'
 full_path = pathvid + namevid
 
-########## Parametros #########
+########## Parameters #########
 frame_ini = 490
 frame_end = 590
 area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
 coords = []
 
-######## Se llama la funcion para tracking #########
 rotation = getRotation(full_path)
 bbox, frame_ini = getBoundingbox(frame_ini, full_path, area_points, rotation)
 rastreo = trackingParticleCSRT(full_path, frame_ini, bbox, rotation, True)
 
-######## Guardado de datos del tracking ##########
+######## Saving data ##########
 coordinates = np.array(rastreo)
 np.savetxt(pathdata+'Tracking2'+namevid[5:7]+'.dat', coordinates)
 
-######## Toma de tiempo #########
 final_time = time.time()
 op_time = (final_time-initial_time)/60
-print('El tracking ' +namevid[5:7]+ ' tardo: %.2f'%(op_time)+' minutos.')
+print('The tracking of the video ' + namevid + ' lasted: %.2f'%(op_time)+' minutes.')
 
-######## Muestra el rastreo completo #########
 show_tracking(coordinates)
 
 

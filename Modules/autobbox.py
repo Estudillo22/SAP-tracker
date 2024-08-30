@@ -55,16 +55,13 @@ def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
         
             area_points = np.array(inverse)
         
-        # Se crea un area especifica para buscar la particula y evitar el mayor ruido posible
+        # Create an area to find the particle, minimizing the noise
         gray = cv2.cvtColor(_frame, cv2.COLOR_BGR2GRAY)
         aux_image = np.zeros(shape=(_frame.shape[:2]), dtype=np.uint8)
         aux_image = cv2.drawContours(aux_image, [area_points], -1, (255), -1)
         image_area = cv2.bitwise_and(gray, gray, mask= aux_image)
-        # Se pasa de la escala de grises a escala binaria para reducir el ruido alrededor...
-        #... de la particula.
+        # Change gray scale to binary scale [0,1]
         bn = cv2.inRange(image_area, np.array([15]), np.array([255]))
-        # Convierte la escala binaria a escala de grises con..
-        #... la conversion de -> pixel = 1 entonces pixel = 255.
         bn[bn>=1] = 255
 
         estimate = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT_ALT, 1, 2000, param1=50, 
@@ -74,13 +71,13 @@ def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
         (a,b,r) = estim
         
     except TypeError:
-        print("No se encontro la particula en el frame " + str(first_fps) + 
-              " --> siguiente: ", first_fps + 1)
+        print("Particle not found in frame number " + str(first_fps) + 
+              " --> next: ", first_fps + 1)
         first_fps = first_fps + 1
         
         if _attempts > 10:
-            print("Se ha excedido el numero de intentos.")
-            print("No se encontro la particula. Ultimo frame analizado: ",
+            print("The limit of attempts has been exceeded.")
+            print("Particle not found. Last analyzed frame: ",
                   first_fps)
             
             return None
@@ -88,8 +85,7 @@ def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
         continue
         
     else:
-        # Se crea una imagen completamente en negro para...
-        #... dibujar el circulo encontrado y estimar mejor la bbox.
+        # Create a black frame to draw the computed circle
         bn[:,:]=0
         circle_bn = cv2.circle(bn, (a,b), r, (255, 255, 255), 2)
 
@@ -108,8 +104,8 @@ def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
     
         return bbox_delta, first_fps
 
-########## Rutas de acceso #########
-pathvid = 'F:\\VParticles\\ControlP5\\'
+########## Paths #########
+pathvid = 'K:\\VParticles\\P5\\'
 namevid = '1-GH010648.MP4' 
 path = pathvid + namevid
 
