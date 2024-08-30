@@ -45,8 +45,7 @@ def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
         _capture = cv2.VideoCapture(path)
         _capture.set(cv2.CAP_PROP_POS_FRAMES, first_fps)
         success, _frame = _capture.read()
-        #Comprueba la orientacion del video para corregir...
-        #... el area de interes dada por area_points.
+
         if orientation == 90:
             inverse = []
 
