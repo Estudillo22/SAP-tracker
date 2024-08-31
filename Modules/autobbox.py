@@ -62,7 +62,6 @@ def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
         image_area = cv2.bitwise_and(gray, gray, mask= aux_image)
         # Change gray scale to binary scale [0,1]
         bn = cv2.inRange(image_area, np.array([15]), np.array([255]))
-        bn[bn>=1] = 255
 
         estimate = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT_ALT, 1, 2000, param1=50, 
                                     param2=0.85, minRadius=5, maxRadius=30)
