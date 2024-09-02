@@ -13,3 +13,5 @@ The libraries you need to install for this are:
 - Pandas
 
 ## Examples
+![Example1](https://github.com/user-attachments/assets/02d2e87e-b920-4093-b725-f9e3e60e795e)
+
