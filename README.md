@@ -7,7 +7,7 @@ The project consists of three modules, each with its functions to facilitate the
 
 ## Prerequisites
 The libraries you need to install for this are:
-- OpenCV-contrib >= 4.9
+- OpenCV-contrib 
 - Numpy
 - Matplotlib
 - Pandas
