@@ -13,6 +13,3 @@ The libraries you need to install for this are:
 - Pandas
 
 ## Examples
-
-
-
