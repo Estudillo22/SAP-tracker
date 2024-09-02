@@ -12,7 +12,8 @@ The libraries you need to install for this are:
 - Matplotlib
 - Pandas
 
-## How to Use
+## Examples
+### A way to use it
 The easiest way to use this tracker is by using the `tracker.py` module and calling the functions `selectBoundingbox` and `trackingParticleCSRT`.
 The first function allows you to select the area where the particle is located and the second function tracks the particle. This approach works if you know beforehand the
 frame number where the particle begins its motion.
@@ -30,7 +31,7 @@ np.savetxt(save_path + 'trajectory_name.dat', trajectory)
 
 ```
 
-## Examples
+### Results
 ![Example1](https://github.com/user-attachments/assets/02d2e87e-b920-4093-b725-f9e3e60e795e)
 
 
