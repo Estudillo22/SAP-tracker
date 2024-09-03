@@ -7,9 +7,34 @@ The project consists of three modules, each with its functions to facilitate the
 
 ## Prerequisites
 The libraries you need to install for this are:
-- OpenCV-contrib
+- OpenCV-contrib 
 - Numpy
 - Matplotlib
 - Pandas
 
 ## Examples
+### A way to use it
+The easiest way to use this tracker is by using the `tracker.py` module and calling the functions `selectBoundingbox` and `trackingParticleCSRT`.
+The first function allows you to select the area where the particle is located and the second function tracks the particle. This approach works if you know beforehand the
+frame number where the particle begins its motion.
+
+```python
+...
+bbox = selectBoundingbox(first_fps, video_path)
+trajectory = trackingParticleCSRT(video_path, first_fps, bbox, 0, 0, True)
+
+#Converting the list to a numpy ndarray
+trajectory = np.array(trajectory)
+
+# Saving the array
+np.savetxt(save_path + 'trajectory_name.dat', trajectory)
+
+```
+
+### Results
+![Example1](https://github.com/user-attachments/assets/02d2e87e-b920-4093-b725-f9e3e60e795e)
+
+
+
+https://github.com/user-attachments/assets/c23e055e-10ed-4b0e-9f78-b5593f8218a9
+
