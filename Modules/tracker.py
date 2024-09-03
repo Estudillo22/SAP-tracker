@@ -66,7 +66,7 @@ def getRotation(video_path: str):
 
     return orientation
 
-def getBoundingbox(first_fps: int, path: str, area_points: np.ndarray,
+def getBoundingBox(first_fps: int, path: str, area_points: np.ndarray,
                   orientation: int = 0, show: bool = False):
  """Gets the bounding box that encloses the particle in the initial frame.
  If the function fails to find the bounding box, it increments the frame number by 1
@@ -160,7 +160,7 @@ def getBoundingbox(first_fps: int, path: str, area_points: np.ndarray,
     
         return bbox_delta, first_fps
 
-def selectBoundingbox(first_fps: int, path: str):
+def selectBoundingBox(first_fps: int, path: str):
     """Displays the initial frame to the user and allows them to manually select
     the bounding box by right-clicking and dragging the mouse.
 
@@ -275,7 +275,7 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
     
     return coords
 
-def show_tracking(points: np.ndarray):
+def showTracking(points: np.ndarray):
     """Shows with matplotlib the list of points obtained by the tracker.
 
     Parameters
@@ -305,7 +305,7 @@ area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
 coords = []
 
 rotation = getRotation(full_path)
-bbox, frame_ini = getBoundingbox(frame_ini, full_path, area_points, rotation)
+bbox, frame_ini = getBoundingBox(frame_ini, full_path, area_points, rotation)
 rastreo = trackingParticleCSRT(full_path, frame_ini, bbox, rotation, True)
 
 ######## Saving data ##########
@@ -316,6 +316,6 @@ final_time = time.time()
 op_time = (final_time-initial_time)/60
 print('The tracking of the video ' + namevid + ' lasted: %.2f'%(op_time)+' minutes.')
 
-show_tracking(coordinates)
+showTracking(coordinates)
 
 

@@ -9,7 +9,7 @@ import numpy as np
 import cv2
 import pandas as pd
 
-def get_auto_bbox(first_fps: int, path: str, area_points: np.ndarray,
+def getBoundingBox(first_fps: int, path: str, area_points: np.ndarray,
                   orientation: int = 0, show: bool =False):
  """Gets the bounding box that encloses the particle in the initial frame.
  If the function fails to find the bounding box, it increments the frame number by 1
@@ -112,5 +112,5 @@ frame_ini = 545
 area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]]) 
 orientation = 0
 
-boundingbox, _fps= get_auto_bbox(frame_ini, path, area_points, orientation, True)
+boundingbox, _fps= getBoundingBox(frame_ini, path, area_points, orientation, True)
 print(boundingbox)
