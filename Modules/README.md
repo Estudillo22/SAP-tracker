@@ -1,4 +1,4 @@
-# A brief explanation of how to use the functions of each module
+# A brief explanation of modules
 
 ## Autubbox module
 This module is designed to obtain an area of interest for the tracker.
