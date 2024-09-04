@@ -183,8 +183,8 @@ def selectBoundingBox(first_fps: int, path: str):
     window = "BBOX"
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.namedWindow(window, cv2.WINDOW_NORMAL)
-    cv2.putText(frame, 'Selecciona el area de interes.', (200, 30), font, 1, (0,255,0), 2)
-    cv2.putText(frame, 'Presiona ENTER para confirmar.', (200, 70), font, 1, (0,255,0), 2)
+    cv2.putText(frame, 'Select the area of interest.', (200, 30), font, 1, (0,255,0), 2)
+    cv2.putText(frame, 'Press ENTER to confirm.', (200, 70), font, 1, (0,255,0), 2)
     cv2.moveWindow(window, 179, 139)
     bbox = cv2.selectROI(window, frame, True)
     capture.release()
