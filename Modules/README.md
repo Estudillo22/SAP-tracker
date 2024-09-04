@@ -31,7 +31,7 @@ This module tracks the particle in every frame of the video.
 
 ### FUNCTIONS
 ### - `liveTracking()`
-Shows the computed trajectory to the user in real time.
+Shows the computed trajectory to the user in real-time.
 
 ### - `getRotation()`
 Determines the orientation of the video.
@@ -43,7 +43,7 @@ Performs the same function as `getBoundingBox()` in the Autobbox module.
 Allows the user to select the area where the particle is located using the mouse.
 
 ### - `tracinkgParticleCSRT()`
-Tracks the particle and computes its position in all frames of the video or until it reaches the last frame number set by the user.
+Tracks the particle and computes its position in all video frames or until it reaches the last frame number set by the user.
 
 ### - `ShowTracking()`
 Plots the trajectory obtained with the `trackingParticleCSRT()` function.
