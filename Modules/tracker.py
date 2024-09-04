@@ -3,7 +3,7 @@ Created on Monday March 20 2023 23:16 GMT-6
 Autor:Alberto Estudillo Moreno 
 Last modification: Monday January 15 2024 0:13 GMT-6
 
-Using autobbox V1.8
+Using autobbox module
 """
 
 import numpy as np
