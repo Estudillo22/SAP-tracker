@@ -46,13 +46,15 @@ This module tracks the particle in every frame of the video.
 Shows the computed trajectory to the user in real-time.
 
 ### - `getRotation()`
-Determines the orientation of the video.
+Determines the orientation of the video. Horizontal = 0, Vertical = 90.
 
 ### - `getBoundingBox()`
 Performs the same function as `getBoundingBox()` in the Autobbox module.
 
 ### - `selectBoundingBox()`
 Allows the user to select the area where the particle is located using the mouse.
+
+![selectbbox](https://github.com/user-attachments/assets/8810c6dd-733d-4136-a50f-502ce93cc329)
 
 ### - `tracinkgParticleCSRT()`
 Tracks the particle and computes its position in all video frames or until it reaches the last frame number set by the user.
