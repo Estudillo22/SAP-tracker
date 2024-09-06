@@ -1,7 +1,7 @@
 """
 Created on Saturday March 25 2023 17:16 GMT-6
-Autor:Alberto Estudillo Moreno 
-Last modification: Sunday January 14 2024 23:22 GMT-6
+Autor: Alberto Estudillo Moreno 
+Version: 2.2.1
 
 """
 

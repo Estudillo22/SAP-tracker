@@ -1,22 +1,22 @@
 """
 Created on Sunday April 16 2023 23:16 GMT-6
-Autor:Alberto Estudillo Moreno 
-Last modification: Wednesday June 12 15:57 GMT-6
+Autor: Alberto Estudillo Moreno 
+Version: 1.2.1
 
 """
 import cv2
 import numpy as np
 
 
-def lightIntensity(_path: str, _percent: float):
+def darknessIntensity(path: str, percent: float):
     """ Compute the frame-by-frame darkness of the video until
     the required percentage is reached.
 
     Parameters
     ----------
-    _path : str
+    path : str
         Path to the video to be analyzed.
-    _percent : float
+    percent : float
         Minimum required percentage of darkness in the video.
 
     Returns
@@ -25,7 +25,7 @@ def lightIntensity(_path: str, _percent: float):
         Return the frame where the video reachs the darkness `fps` and the
         orientation of the video `orientation`.
     """    
-    captureLI = cv2.VideoCapture(_path)
+    captureLI = cv2.VideoCapture(path)
     orientationLI = captureLI.get(cv2.CAP_PROP_ORIENTATION_META)
     while(captureLI.isOpened()):
         _ret, frameLI = captureLI.read()
@@ -38,7 +38,7 @@ def lightIntensity(_path: str, _percent: float):
          # Sums the range [0,35] that represents darkness
          darkness = sum(histogram[0:35])
         
-         if darkness > (1920*1080)*_percent:
+         if darkness > (1920*1080)*percent:
             print('From the frame number %i' %fpsLI + ' the video has %'+
                   str(int(percent*100)) + ' of darkness.')
             captureLI.release()
@@ -50,7 +50,7 @@ def lightIntensity(_path: str, _percent: float):
         
     return fpsLI, orientationLI
     
-def auxiliarImage(frameAI, area_pointsAI):
+def auxiliarImage(frameAI: cv2.typing.MatLike, area_pointsAI: np.ndarray):
     """Create an auxiliary frame that contains information only in a specified area,
     with the rest of the frame set to black pixels.
 
@@ -73,7 +73,7 @@ def auxiliarImage(frameAI, area_pointsAI):
         
     return image_areaAI
     
-def morphologicTransform(imageMT):
+def morphologicTransform(imageMT: cv2.typing.MatLike):
     """Transform the frame to enhance the visibility of the particle using 
     morphological transformations.
 
@@ -97,7 +97,7 @@ def morphologicTransform(imageMT):
         
     return bnMT
 
-def minimumArea(frameMA):
+def minimumArea(frameMA: cv2.typing.MatLike):
     """Compute the area of the particle in pixels and set the minimum area required
     for detecting particle movement.
 
@@ -117,7 +117,7 @@ def minimumArea(frameMA):
 
     return _min_area
     
-def movementDetector(path: str, fps: int, area_points):
+def movementDetector(path: str, fps: int, area_points: np.ndarray):
     """Find the frame number where the particle begins to move. This function uses the
     superposition of five frames to detect a change in the area occupied by the particle, 
     based on a threshold of 2 times the area of the single particle.
@@ -198,7 +198,7 @@ full_path = path_vid + vid_name
 percent = 0.97
 ##################################
 # Frame with darkness
-fps, orientation = lightIntensity(full_path, percent)
+fps, orientation = darknessIntensity(full_path, percent)
 
 ###############################################
 # Motion detection in a specific area.

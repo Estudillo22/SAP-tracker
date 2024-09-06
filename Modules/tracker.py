@@ -1,7 +1,7 @@
 """
 Created on Monday March 20 2023 23:16 GMT-6
-Autor:Alberto Estudillo Moreno 
-Last modification: Monday January 15 2024 0:13 GMT-6
+Autor: Alberto Estudillo Moreno 
+Version: 1.13.4
 
 Using autobbox module
 """
@@ -13,7 +13,7 @@ import time
 import matplotlib.pyplot as plt
 
 
-def liveTracking(fps: int, frame:str, points: np.ndarray, boundingbox: tuple):
+def liveTracking(fps: int, frame: cv2.typing.MatLike, points: np.ndarray, boundingbox: tuple):
     """Shows the tracking in real-time by painting the points computed by the
     tracker in red and the bounding box in white.
 
