@@ -1,7 +1,7 @@
 """
 Created on Sunday April 16 2023 23:16 GMT-6
 Autor: Alberto Estudillo Moreno 
-Version: 1.2.1
+Version: 1.3.0
 
 """
 import cv2
@@ -189,28 +189,28 @@ def movementDetector(path: str, fps: int, area_points: np.ndarray):
 
 
 ##################################
-# Paths
-path_vid = "F:\\VParticles\\Puerta14\\"
-vid_name = "Video01.mp4"
-full_path = path_vid + vid_name
-##################################
-# Parameters
-percent = 0.97
-##################################
-# Frame with darkness
-fps, orientation = darknessIntensity(full_path, percent)
+# # Paths
+# path_vid = "F:\\VParticles\\Puerta14\\"
+# vid_name = "Video01.mp4"
+# full_path = path_vid + vid_name
+# ##################################
+# # Parameters
+# percent = 0.97
+# ##################################
+# # Frame with darkness
+# fps, orientation = darknessIntensity(full_path, percent)
 
-###############################################
-# Motion detection in a specific area.
-area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
-if orientation == 90:
-    inverse = []
+# ###############################################
+# # Motion detection in a specific area.
+# area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
+# if orientation == 90:
+#     inverse = []
 
-    for point in area_points:
-        new_point = point[::-1]
-        inverse.append(new_point)
+#     for point in area_points:
+#         new_point = point[::-1]
+#         inverse.append(new_point)
     
-    area_points = np.array(inverse)
+#     area_points = np.array(inverse)
     
-initial_frame = movementDetector(path_vid + vid_name, fps, area_points)
-print('The initial frame of the video: '+ str(initial_frame))
+# initial_frame = movementDetector(path_vid + vid_name, fps, area_points)
+# print('The initial frame of the video: '+ str(initial_frame))

@@ -1,13 +1,12 @@
 """
 Created on Saturday March 25 2023 17:16 GMT-6
 Autor: Alberto Estudillo Moreno 
-Version: 2.2.1
+Version: 2.3.0
 
 """
 
 import numpy as np
 import cv2
-import pandas as pd
 
 def getBoundingBox(first_fps: int, path: str, area_points: np.ndarray,
                   orientation: int = 0, show: bool =False):
@@ -103,14 +102,45 @@ def getBoundingBox(first_fps: int, path: str, area_points: np.ndarray,
     
         return bbox_delta, first_fps
 
+def selectBoundingBox(first_fps: int, path: str):
+    """Displays the initial frame to the user and allows them to manually select
+    the bounding box by right-clicking and dragging the mouse.
+
+    Parameters
+    ----------
+    first_fps : int
+        Frame number of the initial frame.
+    path : str
+        Path to the video to be analyzed.
+
+    Returns
+    -------
+    bbox : Rect
+        The bounding box with the upper-left corner (x, y), width, and height.
+    """    
+    capture = cv2.VideoCapture(path)
+    capture.set(cv2.CAP_PROP_POS_FRAMES, first_fps)
+    success, frame = capture.read()
+    
+    window = "BBOX"
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.namedWindow(window, cv2.WINDOW_NORMAL)
+    cv2.putText(frame, 'Select the area of interest.', (200, 30), font, 1, (0,255,0), 2)
+    cv2.putText(frame, 'Press ENTER to confirm.', (200, 70), font, 1, (0,255,0), 2)
+    cv2.moveWindow(window, 179, 139)
+    bbox = cv2.selectROI(window, frame, True)
+    capture.release()
+    cv2.destroyAllWindows()
+    
+    return bbox
 ########## Paths #########
-pathvid = 'K:\\VParticles\\P5\\'
-namevid = '1-GH010648.MP4' 
-path = pathvid + namevid
+# pathvid = 'K:\\VParticles\\P5\\'
+# namevid = '1-GH010648.MP4' 
+# path = pathvid + namevid
 
-frame_ini = 545
-area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]]) 
-orientation = 0
+# frame_ini = 545
+# area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]]) 
+# orientation = 0
 
-boundingbox, _fps= getBoundingBox(frame_ini, path, area_points, orientation, True)
-print(boundingbox)
+# boundingbox, _fps= getBoundingBox(frame_ini, path, area_points, orientation, True)
+# print(boundingbox)
