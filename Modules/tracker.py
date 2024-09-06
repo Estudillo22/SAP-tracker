@@ -225,6 +225,7 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
     success, frame = capture.read()
     count = capture.get(cv2.CAP_PROP_FRAME_COUNT)
     fps = initial_fps
+    coords = []
     
     # Create the tracker variable
     tracker = cv2.TrackerCSRT_create()
@@ -289,33 +290,33 @@ def showTracking(points: np.ndarray):
     plt.show()
     return 0
 
-########## Toma de tiempo ##########
-initial_time = time.time()
+# ########## Toma de tiempo ##########
+# initial_time = time.time()
 
-########## Access and saving paths ######### 
-pathvid = 'K:\\VParticles\\14\\'
-pathdata = 'K:\\Tracking\\'
-namevid = 'Video05H.MP4'
-full_path = pathvid + namevid
+# ########## Access and saving paths ######### 
+# pathvid = 'K:\\VParticles\\14\\'
+# pathdata = 'K:\\Tracking\\'
+# namevid = 'Video05H.MP4'
+# full_path = pathvid + namevid
 
-########## Parameters #########
-frame_ini = 490
-frame_end = 590
-area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
-coords = []
+# ########## Parameters #########
+# frame_ini = 490
+# frame_end = 590
+# area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
+# coords = []
 
-rotation = getRotation(full_path)
-bbox, frame_ini = getBoundingBox(frame_ini, full_path, area_points, rotation)
-rastreo = trackingParticleCSRT(full_path, frame_ini, bbox, rotation, True)
+# rotation = getRotation(full_path)
+# bbox, frame_ini = getBoundingBox(frame_ini, full_path, area_points, rotation)
+# rastreo = trackingParticleCSRT(full_path, frame_ini, bbox, rotation, True)
 
-######## Saving data ##########
-coordinates = np.array(rastreo)
-np.savetxt(pathdata+'Tracking2'+namevid[5:7]+'.dat', coordinates)
+# ######## Saving data ##########
+# coordinates = np.array(rastreo)
+# np.savetxt(pathdata+'Tracking2'+namevid[5:7]+'.dat', coordinates)
 
-final_time = time.time()
-op_time = (final_time-initial_time)/60
-print('The tracking of the video ' + namevid + ' lasted: %.2f'%(op_time)+' minutes.')
+# final_time = time.time()
+# op_time = (final_time-initial_time)/60
+# print('The tracking of the video ' + namevid + ' lasted: %.2f'%(op_time)+' minutes.')
 
-showTracking(coordinates)
+# showTracking(coordinates)
 
 
