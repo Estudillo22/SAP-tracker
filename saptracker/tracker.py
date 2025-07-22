@@ -11,6 +11,7 @@ import pandas as pd
 import cv2
 import time
 import matplotlib.pyplot as plt
+from scipy import signal
 
 
 def liveTracking(fps: int, frame: cv2.typing.MatLike, points: np.ndarray, boundingbox: tuple):
@@ -30,7 +31,7 @@ def liveTracking(fps: int, frame: cv2.typing.MatLike, points: np.ndarray, boundi
     """    
     windowN = "Tracking"
     font = cv2.FONT_HERSHEY_SIMPLEX
-    pts=np.array(points, dtype=np.int32)
+    pts = np.array(points, dtype=np.int32)
     p1 = (int(boundingbox[0]), int(boundingbox[1]))
     p2 = (int(boundingbox[0]+boundingbox[2]), int(boundingbox[1]+boundingbox[3]))
     
@@ -192,6 +193,90 @@ def selectBoundingBox(first_fps: int, path: str):
     
     return bbox
 
+def particleData(path, start_frame, box):
+    # Loading the frame
+    capture = cv2.VideoCapture(path)
+    capture.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+    success, frame = capture.read()
+    # Mask creation
+    roi = np.zeros(frame.shape[:2], np.uint8)
+    mask = np.ones_like(frame) * 255
+    p1 = (box[0]-5,box[1]-5)
+    p2 = (box[0]+box[2]+5, box[1]+box[3]+5)
+    rec = cv2.rectangle(roi, p1, p2, (255,255,255), -1)
+    masked = cv2.bitwise_and(mask, frame, mask=rec)
+    # Finding the particle
+    aux_hough = cv2.cvtColor(masked, cv2.COLOR_BGR2GRAY)
+    particle = cv2.HoughCircles(aux_hough, cv2.HOUGH_GRADIENT, 1, 2500, param1=250, param2= 30,
+                                minRadius=10, maxRadius=150)
+    x,y,r = particle[0][0,:].astype("int")
+    
+    return x,y,r
+
+def maskingParticle(frame, box):
+    # Mask creation
+    roi = np.zeros(frame.shape[:2], np.uint8)
+    mask = np.ones_like(frame) * 255
+    p1 = (box[0]-5,box[1]-5)
+    p2 = (box[0]+box[2]+5, box[1]+box[3]+5)
+    rec = cv2.rectangle(roi, p1, p2, (255,255,255), -1)
+    masked = cv2.bitwise_and(mask, frame, mask=rec)
+    # Finding the particle
+    aux_hough = cv2.cvtColor(masked, cv2.COLOR_BGR2GRAY)
+    particle = cv2.HoughCircles(aux_hough, cv2.HOUGH_GRADIENT, 1, 2500, param1=250, param2= 30,
+                                minRadius=10, maxRadius=150)
+    x,y,r = particle[0][0,:].astype("int")
+    # Second mask
+    roi = np.zeros(frame.shape[:2], np.uint8)
+    mask = np.ones_like(frame) * 255
+    circ = cv2.circle(roi, (x,y), r, (255,255,255), -1)
+
+    return x,y,r
+
+def colorRange(original_frame, masked_frame):
+    mask = np.ones_like(original_frame) * 255
+    masked = cv2.bitwise_and(mask, original_frame, mask = masked_frame)
+    hsv_frame = cv2.cvtColor(masked, cv2.COLOR_BGR2HSV)
+    h,s,v = hsv_frame[:,:,0], hsv_frame[:,:,1], hsv_frame[:,:,2]
+    h_min, h_max = np.min(h[h != 0 ]), np.max(h)
+    s_min, s_max = np.min(s[s != 0 ]), np.max(s)
+    v_min, v_max = np.min(v[v != 0 ]), np.max(v)
+    lw_color = np.array([h_min, s_min, v_min])
+    up_color = np.array([h_max, s_max, v_max])
+    
+    return lw_color, up_color
+
+def findingMoments(masked_frame):
+    contours, _ = cv2.findContours(masked_frame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for j in contours:
+        moments = cv2.moments(j)
+        if moments["m00"] != 0:
+            x = moments["m10"] / moments["m00"]
+            y = moments["m01"] / moments["m00"]
+            point = np.array([x, y])
+    
+    return point
+
+def findingPoint(frame, box, lower_range, upper_range):
+    roi = np.zeros(frame.shape[:2], np.uint8)
+    mask = np.ones_like(frame) * 255
+    p1 = (box[0]-5,box[1]-5)
+    p2 = (box[0]+box[2]+5, box[1]+box[3]+5)
+    rec = cv2.rectangle(roi, p1, p2, (255,255,255), -1)
+    masked = cv2.bitwise_and(mask, frame, mask=rec)
+    hsv_frame = cv2.cvtColor(masked, cv2.COLOR_BGR2HSV)
+    thresh = cv2.inRange(hsv_frame, lower_range, upper_range)
+    kernel = np.ones((10,10), np.uint8)
+    open_frame = cv2.erode(cv2.dilate(thresh, kernel), kernel)
+    contours, _ = cv2.findContours(open_frame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    for j in contours:
+        if cv2.contourArea(j) >= 300:
+            (x,y), r = cv2.minEnclosingCircle(j)
+            point = np.array([x, y])
+    
+    return point
+
 def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: int = 0,
                           orientation: int = 0, irl: bool = False):
     """Tracks the particle's position in each frame of the video until the video ends
@@ -235,9 +320,9 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
 
     while fps < count:
         # Compute the central point of the bbox
-        X = int((bbox[0]+bbox[0]+bbox[2])/2)
-        Y = int((bbox[1]+bbox[1]+bbox[3])/2)
-        
+        X = (bbox[0]+bbox[0]+bbox[2])/2
+        Y = (bbox[1]+bbox[1]+bbox[3])/2
+        # X, Y = findingPoint(frame, bbox, color_range[0], color_range[1])
         # Saves the coordinates depending on the orientation
         if orientation == 90:
             coords.append([Y,X])
@@ -276,6 +361,24 @@ def trackingParticleCSRT(path: str, initial_fps: int, bbox: tuple, final_frame: 
     
     return coords
 
+def unitConversion(array, pixel_radius, centimeter_radius, center_point):
+    fixed_array = array - center_point
+    proportion = centimeter_radius / pixel_radius
+    converted_array = fixed_array * proportion
+    
+    return converted_array
+
+def denoiseFilter(points):
+    level = 0.3
+    xn = points[:,0]
+    yn = points[:,1]
+    
+    b, a = signal.butter(3, level)
+    xf = signal.filtfilt(b, a, xn)
+    yf = signal.filtfilt(b, a, yn)
+    
+    return xf, yf
+
 def showTracking(points: np.ndarray):
     """Shows with matplotlib the list of points obtained by the tracker.
 
@@ -290,33 +393,48 @@ def showTracking(points: np.ndarray):
     plt.show()
     return 0
 
-# ########## Toma de tiempo ##########
+# # ########## Toma de tiempo ##########
 # initial_time = time.time()
 
-# ########## Access and saving paths ######### 
-# pathvid = 'K:\\VParticles\\14\\'
-# pathdata = 'K:\\Tracking\\'
-# namevid = 'Video05H.MP4'
-# full_path = pathvid + namevid
+# ######### Access and saving paths ######### 
+video_path = "/Users/estudillo/Documents/Multiparticulas/Videos/"
+video_name = "Experimento_08.MP4"
+full_path = video_path + video_name
+name_data = "Track08Denoised.dat"
+full_data = "/Users/estudillo/Documents/Multiparticulas/Trackings/" + name_data
 
-# ########## Parameters #########
-# frame_ini = 490
-# frame_end = 590
-# area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
-# coords = []
+# # ########## Parameters #########
+# frame_ini = 100
+# frame_end = -1
+# # area_points = np.array([[1201,697],[1201,381],[767,381],[767,697]])
+# # coords = []
 
-# rotation = getRotation(full_path)
-# bbox, frame_ini = getBoundingBox(frame_ini, full_path, area_points, rotation)
-# rastreo = trackingParticleCSRT(full_path, frame_ini, bbox, rotation, True)
+# # rotation = getRotation(full_path)
+# bbox = selectBoundingBox(frame_ini, full_path)
+# particle = particleData(full_path, frame_ini, bbox)
+# rastreo = trackingParticleCSRT(full_path, frame_ini, bbox, frame_end, 0, True)
 
-# ######## Saving data ##########
+# # ######## Saving data ##########
 # coordinates = np.array(rastreo)
-# np.savetxt(pathdata+'Tracking2'+namevid[5:7]+'.dat', coordinates)
+# converted = unitConversion(coordinates, particle[2], 0.75, (1017, 478))
+# denoised = denoiseFilter(converted)
+# np.savetxt(full_data, denoised)
 
+# # denois = denoiseFilter(coordinates)
 # final_time = time.time()
 # op_time = (final_time-initial_time)/60
-# print('The tracking of the video ' + namevid + ' lasted: %.2f'%(op_time)+' minutes.')
+# print('The tracking of the video ' + video_name + ' lasted: %.2f'%(op_time)+' minutes.')
 
-# showTracking(coordinates)
+denoised = np.loadtxt(full_data)
+radio = 0.75
+# print(denoised[0,-1], denoised[1,-1])
+ts = np.linspace(0, 2*np.pi, 200)
+xes = denoised[0,-1] + radio*np.cos(ts)
+yes = denoised[1,-1] + radio*np.sin(ts)
+fig, ax = plt.subplots(dpi = 150)
+ax.plot(denoised[0], denoised[1], 'k')
+ax.plot(xes, yes, 'r')
+ax.set_box_aspect(1)
+plt.show()
 
 
